@@ -1,0 +1,29 @@
+name: Code Scan
+
+on:
+  workflow_call:
+
+jobs:
+  upload_sarif:
+    runs-on: self-hosted
+    permissions: 
+      security-events: write
+      actions: read
+      contents: read
+    steps:
+      - name: Leave Artifact
+        run: |
+          docker run -v ${{ github.workspace }}:/repo/ test_sarif
+        continue-on-error: true
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: report
+          path: report.sarif
+
+      - name: Upload SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: report.sarif
+          category: code-scan
